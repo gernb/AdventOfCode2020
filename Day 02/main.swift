@@ -43,11 +43,34 @@ Part1.run(InputData.challenge)
 
 print("")
 
+struct NewPolicy {
+    let letter: String
+    let idx1: Int
+    let idx2: Int
+
+    init(_ string: String) {
+        let tokens = string.components(separatedBy: " ")
+        let values = tokens[0].components(separatedBy: "-").compactMap(Int.init)
+        self.letter = tokens[1]
+        self.idx1 = values[0] - 1
+        self.idx2 = values[1] - 1
+    }
+
+    func isValid(_ password: String) -> Bool {
+        let chars = password.map(String.init)
+        let idx1Valid = String(chars[idx1]) == letter
+        let idx2Valid = String(chars[idx2]) == letter
+        return (idx1Valid || idx2Valid) && (idx1Valid != idx2Valid)
+    }
+}
+
 enum Part2 {
-    static func run(_ input: [Int]) {
+    static func run(_ input: [[String]]) {
+        let validCount = input.map { NewPolicy($0[0]).isValid($0[1]) ? 1 : 0 }.reduce(0, +)
         print("Part 2:")
+        print("\(validCount) valid passwords out of \(input.count)")
     }
 }
 
 //Part2.run(InputData.example)
-//Part2.run(InputData.challenge)
+Part2.run(InputData.challenge)
