@@ -36,9 +36,38 @@ Part1.run(InputData.challenge)
 print("")
 
 enum Part2 {
-    static func run() {
+    static let slopes = [
+        (x: 1, y: 1),
+        (x: 3, y: 1),
+        (x: 5, y: 1),
+        (x: 7, y: 1),
+        (x: 1, y: 2),
+    ]
+
+    static func run(_ map: [[String]], with slope: (x: Int, y: Int)) -> Int {
+        var position = (x: 0, y: 0)
+        var trees = 0
+
+        while position.y < map.count {
+            if map[position.y][position.x] == "#" {
+                trees += 1
+            }
+            position.x = (position.x + slope.x) % map[position.y].count
+            position.y += slope.y
+        }
+
+        return trees
+    }
+
+    static func run(_ map: [[String]]) {
+        let product = slopes
+            .map { run(map, with: $0) }
+            .reduce(1, *)
+
         print("Part 2:")
+        print("Answer is \(product)")
     }
 }
 
-//Part2.run()
+//Part2.run(InputData.example)
+Part2.run(InputData.challenge)
