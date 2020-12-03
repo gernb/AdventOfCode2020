@@ -58,8 +58,8 @@ struct NewPolicy {
 
     func isValid(_ password: String) -> Bool {
         let chars = password.map(String.init)
-        let idx1Valid = String(chars[idx1]) == letter
-        let idx2Valid = String(chars[idx2]) == letter
+        let idx1Valid = chars[idx1] == letter
+        let idx2Valid = chars[idx2] == letter
         return (idx1Valid || idx2Valid) && (idx1Valid != idx2Valid)
     }
 }
