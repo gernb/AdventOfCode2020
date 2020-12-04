@@ -22,7 +22,7 @@ enum Part1 {
     }
 
     static func isValid(_ passport: String) -> Bool {
-        let fields = passport.components(separatedBy: .whitespaces)
+        let fields = passport.components(separatedBy: .whitespacesAndNewlines)
             .map { $0.components(separatedBy: ":")[0] }
             .compactMap(RequiredFields.init)
         return Set(fields) == Set(RequiredFields.allCases)
@@ -30,22 +30,10 @@ enum Part1 {
 
     static func run(_ source: String) {
         let input = InputData[source]!
-        var partial = ""
-        var passports = input.reduce([]) { result, line -> [String] in
-            if line.isEmpty {
-                let result = result + [partial.trimmingCharacters(in: .whitespaces)]
-                partial = ""
-                return result
-            } else {
-                partial += " " + line
-                return result
-            }
-        }
-        if !partial.isEmpty { passports.append(partial.trimmingCharacters(in: .whitespaces)) }
-        let valid = passports.map { isValid($0) ? 1 : 0 }.reduce(0, +)
+        let valid = input.map { isValid($0) ? 1 : 0 }.reduce(0, +)
 
         print("Part 1 (\(source)):")
-        print("\(passports.count) total passports; \(valid) are valid")
+        print("\(input.count) total passports; \(valid) are valid")
     }
 }
 
@@ -57,7 +45,7 @@ Part1.run("challenge")
 print("")
 
 enum Part2 {
-    enum RequiredField: String {
+    enum Field: String, CaseIterable {
         case birthYear = "byr"
         case issueYear = "iyr"
         case expirationYear = "eyr"
@@ -66,6 +54,24 @@ enum Part2 {
         case eyeColor = "ecl"
         case passportId = "pid"
         case countryId = "cid"
+
+        static let requiredFields = Set(allCases).subtracting([.countryId])
+    }
+
+    struct Passport {
+        let fields: [Field: String]
+
+        init(_ string: String) {
+            self.fields = .init(uniqueKeysWithValues: string.components(separatedBy: .whitespacesAndNewlines)
+                .map {
+                    let parts = $0.components(separatedBy: ":")
+                    return (Field(rawValue: parts[0])!, parts[1])
+                })
+        }
+
+        var isValid: Bool {
+            Field.requiredFields.reduce(true) { $0 && hasValid($1) }
+        }
 
         /*
          byr (Birth Year) - four digits; at least 1920 and at most 2002.
@@ -79,8 +85,9 @@ enum Part2 {
          pid (Passport ID) - a nine-digit number, including leading zeroes.
          cid (Country ID) - ignored, missing or not.
          */
-        func isValid(for data: String) -> Bool {
-            switch self {
+        func hasValid(_ field: Field) -> Bool {
+            guard let data = fields[field] else { return false }
+            switch field {
             case .birthYear:
                 guard let year = Int(data) else { return false }
                 return year >= 1920 && year <= 2002
@@ -111,39 +118,9 @@ enum Part2 {
         }
     }
 
-    struct Passport {
-        let source: String
-        let fields: [(field: RequiredField, data: String)]
-
-        init(_ string: String) {
-            self.source = string
-            self.fields = string.trimmingCharacters(in: .whitespaces)
-                .components(separatedBy: .whitespaces)
-                .map {
-                    let parts = $0.components(separatedBy: ":")
-                    return (RequiredField(rawValue: parts[0])!, parts[1])
-                }
-        }
-
-        var isValid: Bool {
-             fields.reduce(Part1.isValid(source)) { $0 && $1.field.isValid(for: $1.data) }
-        }
-    }
-
     static func run(_ source: String) {
         let input = InputData[source]!
-        var partial = ""
-        var passports = input.reduce([]) { result, line -> [Passport] in
-            if line.isEmpty {
-                let result = result + [Passport(partial)]
-                partial = ""
-                return result
-            } else {
-                partial += " " + line
-                return result
-            }
-        }
-        if !partial.isEmpty { passports.append(Passport(partial)) }
+        let passports = input.map(Passport.init)
         let valid = passports.map { $0.isValid ? 1 : 0 }.reduce(0, +)
 
         print("Part 2 (\(source)):")
