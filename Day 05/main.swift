@@ -58,9 +58,16 @@ print("")
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        let seatIds = input.map(Part1.seatId).sorted()
 
         print("Part 2 (\(source)):")
+        for (idx, seatId) in seatIds.enumerated().dropFirst() {
+            if seatId - seatIds[idx - 1] != 1 {
+                print("Your seat ID is: \(seatId - 1)")
+                break
+            }
+        }
     }
 }
 
-InputData.allCases.forEach(Part2.run)
+Part2.run(.challenge)
