@@ -40,12 +40,13 @@ enum Part1 {
         let seatIds = input.map(seatId)
 
         print("Part 1 (\(source)):")
-        if (source != .challenge) {
+        if (source == .challenge) {
+            print("Highest seat ID is: \(seatIds.max()!)")
+        } else {
             seatIds.enumerated().forEach {
-                print("\(input[$0]) -> \($1)")
+                print("\(input[$0].joined()) -> \($1)")
             }
         }
-        print("Highest seat ID is: \(seatIds.max()!)")
     }
 }
 
