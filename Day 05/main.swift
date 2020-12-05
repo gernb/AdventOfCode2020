@@ -57,6 +57,45 @@ InputData.allCases.forEach(Part1.run)
 print("")
 
 enum Part2 {
+    static func boardingPass(for seatId: Int) -> [String] {
+        let row = seatId / 8
+        let column = seatId - row * 8
+
+        print("Seat ID is Row \(row), Column \(column)")
+
+        var pass = [String]()
+        var rows = 0 ... 127
+        var columns = 0 ... 7
+
+        while rows.lowerBound != rows.upperBound {
+            let halfRange = (rows.upperBound - rows.lowerBound) / 2
+            let lowerHalf = rows.lowerBound ... (rows.lowerBound + halfRange)
+            let upperHalf = (rows.lowerBound + halfRange + 1) ... rows.upperBound
+            if lowerHalf.contains(row) {
+                pass.append("F")
+                rows = lowerHalf
+            } else {
+                pass.append("B")
+                rows = upperHalf
+            }
+        }
+
+        while columns.lowerBound != columns.upperBound {
+            let halfRange = (columns.upperBound - columns.lowerBound) / 2
+            let lowerHalf = columns.lowerBound ... (columns.lowerBound + halfRange)
+            let upperHalf = (columns.lowerBound + halfRange + 1) ... columns.upperBound
+            if lowerHalf.contains(column) {
+                pass.append("L")
+                columns = lowerHalf
+            } else {
+                pass.append("R")
+                columns = upperHalf
+            }
+        }
+
+        return pass
+    }
+
     static func run(_ source: InputData) {
         let input = source.data
 
@@ -66,6 +105,10 @@ enum Part2 {
 
         print("Part 2 (\(source)):")
         print("Your seat ID is: \(emptySeats)")
+
+        let pass = boardingPass(for: emptySeats.first!)
+        print("Your boarding pass is: \(pass.joined())")
+        assert(!input.contains(pass))
     }
 }
 
