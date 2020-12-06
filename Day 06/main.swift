@@ -29,10 +29,19 @@ InputData.allCases.forEach(Part1.run)
 print("")
 
 enum Part2 {
+    static func commonAnswers(for group: String) -> Int {
+        let people = group.components(separatedBy: .newlines)
+            .map { Set($0.map(String.init)) }
+        let allAnswers = Set("abcdefghijklmnopqrstuvwxyz".map(String.init))
+        let common = people.reduce(allAnswers) { $0.intersection($1) }
+        return common.count
+    }
+
     static func run(_ source: InputData) {
         let input = source.data
-
+        let sum = input.map(commonAnswers).reduce(0, +)
         print("Part 2 (\(source)):")
+        print("Sum of common answers is: \(sum)")
     }
 }
 
