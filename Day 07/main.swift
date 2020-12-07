@@ -72,7 +72,8 @@ enum Part1 {
     }
 }
 
-InputData.allCases.forEach(Part1.run)
+Part1.run(.example)
+Part1.run(.challenge)
 
 // MARK: - Part 2
 
@@ -81,7 +82,21 @@ print("")
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        let rules = input.map(Rule.init).reduce(into: [String: Rule](), { $0[$1.colour] = $1 })
+
         print("Part 2 (\(source)):")
+
+        var bagCount = 0
+        var queue = [(rule: rules["shiny gold"]!, multiplier: 1)]
+        while !queue.isEmpty {
+            let (rule, multiplier) = queue.removeFirst()
+            rule.contents.forEach { colour, count in
+                bagCount += count * multiplier
+                queue.append((rules[colour]!, count * multiplier))
+            }
+        }
+
+        print("A shiny gold bag must contain \(bagCount) other bags.")
     }
 }
 
