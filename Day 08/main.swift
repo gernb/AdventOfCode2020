@@ -13,8 +13,8 @@ print("Day 8:")
 
 final class HandheldComputer {
     private(set) var accumulator = 0
-    private var ip = 0
-    private let program: [Operation]
+    private(set) var ip = 0
+    let program: [Operation]
 
     enum Operation {
         case acc(Int) // accumulate
@@ -33,6 +33,10 @@ final class HandheldComputer {
             default: fatalError()
             }
         }
+    }
+
+    init(_ program: [Operation]) {
+        self.program = program
     }
 
     func step() -> Int {
@@ -78,10 +82,54 @@ InputData.allCases.forEach(Part1.run)
 print("")
 
 enum Part2 {
+    enum ProgramResult: Comparable {
+        case halted(Int)
+        case looped(Int)
+    }
+
+    static func runProgram(_ program: [HandheldComputer.Operation]) -> ProgramResult {
+        let computer = HandheldComputer(program)
+        var executedIPs = Set<Int>([0])
+        while true {
+            let nextIP = computer.step()
+            if executedIPs.contains(nextIP) {
+                return .looped(computer.accumulator)
+            } else if nextIP >= program.count {
+                return .halted(computer.accumulator)
+            }
+            executedIPs.insert(nextIP)
+        }
+    }
+
     static func run(_ source: InputData) {
         let input = source.data
+        let computer = HandheldComputer(input)
 
         print("Part 2 (\(source)):")
+
+        for (idx, op) in computer.program.enumerated() {
+            switch op {
+            case .acc: continue
+            case .jmp(let arg):
+                var program = computer.program
+                program[idx] = .nop(arg)
+                let result = runProgram(program)
+                if case .halted(let value) = result {
+                    print("Halted with value: \(value)")
+                    print("Changed <jmp \(arg)> to <nop \(arg)> on line \(idx)")
+                    return
+                }
+            case .nop(let arg):
+                var program = computer.program
+                program[idx] = .jmp(arg)
+                let result = runProgram(program)
+                if case .halted(let value) = result {
+                    print("Halted with value: \(value)")
+                    print("Changed <nop \(arg)> to <jmp \(arg)> on line \(idx)")
+                    return
+                }
+            }
+        }
     }
 }
 
