@@ -21,16 +21,21 @@ enum Part1 {
         return false
     }
 
-    static func run(_ source: InputData) {
+    static func findInvalidNumber(_ source: InputData) -> Int {
         let (len, input) = source.data
-        print("Part 1 (\(source)):")
         for (idx, number) in input.enumerated().dropFirst(len) {
             let previousNumbers = Set(input[idx - len ..< idx])
             if !isValid(number: number, for: previousNumbers) {
-                print("Found invalid entry: \(number) at position: \(idx)")
-                break
+                return number
             }
         }
+        fatalError()
+    }
+
+    static func run(_ source: InputData) {
+        let number = findInvalidNumber(source)
+        print("Part 1 (\(source)):")
+        print("Found invalid entry: \(number)")
     }
 }
 
@@ -42,9 +47,23 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
-
+        let (_, input) = source.data
+        let invalidNumber = Part1.findInvalidNumber(source)
         print("Part 2 (\(source)):")
+        for startIdx in 0 ..< input.count - 1 {
+            for endIdx in startIdx + 1 ..< input.count {
+                let sum = input[startIdx ... endIdx].reduce(0, +)
+                if sum == invalidNumber {
+                    let slice = input[startIdx ... endIdx]
+                    let result = slice.min()! + slice.max()!
+                    print("Min + Max = \(result) for\n\(slice)")
+                    return
+                }
+                if sum > invalidNumber {
+                    break
+                }
+            }
+        }
     }
 }
 
