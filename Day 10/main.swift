@@ -34,10 +34,42 @@ InputData.allCases.forEach(Part1.run)
 print("")
 
 enum Part2 {
-    static func run(_ source: InputData) {
-        let input = source.data
+    static var countFromAdaptor = [Int: Int]()
+    static func computeCount(start: Int, slice: ArraySlice<Int>) -> Int {
+        guard slice.count > 0 else { return 1 }
+        if let count = countFromAdaptor[start] {
+            return count
+        }
+        var slice = slice
+        var count = 0
+        if let next = slice.first, next == start + 1 {
+            slice = slice.dropFirst()
+            let countForNext = computeCount(start: next, slice: slice)
+            countFromAdaptor[next] = countForNext
+            count += countForNext
+        }
+        if let next = slice.first, next == start + 2 {
+            slice = slice.dropFirst()
+            let countForNext = computeCount(start: next, slice: slice)
+            countFromAdaptor[next] = countForNext
+            count += countForNext
+        }
+        if let next = slice.first, next == start + 3 {
+            slice = slice.dropFirst()
+            let countForNext = computeCount(start: next, slice: slice)
+            countFromAdaptor[next] = countForNext
+            count += countForNext
+        }
+        return count
+    }
 
+    static func run(_ source: InputData) {
+        let input = source.data.sorted()
+        let list = input + [input.max()! + 3]
+        countFromAdaptor = [:]
+        let count = computeCount(start: 0, slice: ArraySlice(list))
         print("Part 2 (\(source)):")
+        print("Total is \(count)")
     }
 }
 
