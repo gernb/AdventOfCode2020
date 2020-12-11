@@ -93,11 +93,74 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+extension Array where Element: MutableCollection, Element.Index == Int, Element.Element == String {
+    func isOccupied(from location: Coordinate, in direction: KeyPath<Coordinate, Coordinate>) -> Bool {
+        let adjustedLocation = location[keyPath: direction]
+        switch self[adjustedLocation] {
+        case .none: return false
+        case "L": return false
+        case "#": return true
+        case ".": return isOccupied(from: adjustedLocation, in: direction)
+        default: fatalError()
+        }
+    }
+
+    func countOfOccupiedSeatsPart2(at location: Coordinate) -> Int {
+        [
+            isOccupied(from: location, in: \.upLeft),
+            isOccupied(from: location, in: \.up),
+            isOccupied(from: location, in: \.upRight),
+            isOccupied(from: location, in: \.left),
+            isOccupied(from: location, in: \.right),
+            isOccupied(from: location, in: \.downLeft),
+            isOccupied(from: location, in: \.down),
+            isOccupied(from: location, in: \.downRight),
+        ].map { $0 ? 1 : 0 }.reduce(0, +)
+    }
+
+    func draw() {
+        for y in 0 ..< self.count {
+            for x in 0 ..< self[y].count {
+                let pixel = self[Coordinate(x: x, y: y)]!
+                print(pixel, terminator: "")
+            }
+            print("")
+        }
+    }
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var seatLayout = source.data
+
+        while true {
+            var nextSeatLayout = seatLayout
+            for (y, row) in seatLayout.enumerated() {
+                for (x, spot) in row.enumerated() {
+                    let location = Coordinate(x: x, y: y)
+                    switch spot {
+                    case "L": // empty seat
+                        if seatLayout.countOfOccupiedSeatsPart2(at: location) == 0 {
+                            nextSeatLayout[location] = "#" // now occupied
+                        }
+                    case "#": // occupied seat
+                        if seatLayout.countOfOccupiedSeatsPart2(at: location) >= 5 {
+                            nextSeatLayout[location] = "L" // now empty
+                        }
+                    default:
+                        break
+                    }
+                }
+            }
+            if nextSeatLayout == seatLayout {
+                break
+            }
+            seatLayout = nextSeatLayout
+        }
 
         print("Part 2 (\(source)):")
+        let count = seatLayout.map { $0.reduce(0) { $0 + ($1 == "#" ? 1 : 0) } }.reduce(0, +)
+        print("Occupied seats at quiescence: \(count)")
     }
 }
 
