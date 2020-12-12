@@ -37,17 +37,10 @@ struct Coordinate: Hashable, CustomStringConvertible {
 
     var description: String { "(\(x), \(y))" }
 
-    var north: Self { .init(x: x, y: y - 1) }
-    var south: Self { .init(x: x, y: y + 1) }
-    var west: Self { .init(x: x - 1, y: y) }
-    var east: Self { .init(x: x + 1, y: y) }
-
-    var neighbours: [Self] { [north, west, east, south] }
-
     mutating func move(_ units: Int, direction: Heading) {
         switch direction {
-        case .north: self = .init(x: x, y: y - units)
-        case .south: self = .init(x: x, y: y + units)
+        case .north: self = .init(x: x, y: y + units)
+        case .south: self = .init(x: x, y: y - units)
         case .west: self = .init(x: x - units, y: y)
         case .east: self = .init(x: x + units, y: y)
         }
@@ -124,11 +117,55 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+enum Direction {
+    case left, right
+}
+
+extension Coordinate {
+    mutating func moveTowards(_ waypoint: Coordinate, units: Int) {
+        self = .init(x: self.x + waypoint.x * units, y: self.y + waypoint.y * units)
+    }
+
+    mutating func rotate(_ direction: Direction) {
+        switch direction {
+        case .left:
+            self = .init(x: -self.y, y: self.x)
+
+        case .right:
+            self = .init(x: self.y, y: -self.x)
+        }
+    }
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let input = source.data.map(Instruction.init)
+        var waypoint = Coordinate(x: 10, y: 1)
+        var position = Coordinate.origin
+        input.forEach { instruction in
+            switch instruction {
+            case .north(let units): waypoint.move(units, direction: .north)
+            case .south(let units): waypoint.move(units, direction: .south)
+            case .east(let units): waypoint.move(units, direction: .east)
+            case .west(let units): waypoint.move(units, direction: .west)
+            case .forward(let units): position.moveTowards(waypoint, units: units)
+            case .left(var units):
+                while units > 0 {
+                    waypoint.rotate(.left)
+                    units -= 90
+                }
+                assert(units == 0)
+            case .right(var units):
+                while units > 0 {
+                    waypoint.rotate(.right)
+                    units -= 90
+                }
+                assert(units == 0)
+            }
+        }
 
         print("Part 2 (\(source)):")
+        print("Final position is \(position.distance(to: .origin)) units away at \(position)")
     }
 }
 
