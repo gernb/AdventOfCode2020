@@ -104,25 +104,19 @@ enum Part2 {
     }
 
     static func addressesFor(_ address: Int, with mask: Mask) -> [Int] {
+        // Apply all the "set bit" parts of the mask
         let address = mask
             .filter { $0.value == .setToOne }
             .reduce(into: address) { $0 |= 1 << $1.index }
-        let mask = mask.filter { $0.value == .floating }
-        if mask.count == 1 {
-            return [
-                address | 1 << mask[0].index,
-                address & ~(1 << mask[0].index)
-            ]
-        }
-        let partialAddresses = addressesFor(address, with: Array(mask.dropFirst()))
-        var addresses = [partialAddresses, partialAddresses].flatMap { $0 }
-        for i in 0 ..< addresses.count / 2 {
-            addresses[i] |= 1 << mask[0].index
-        }
-        for i in addresses.count / 2 ..< addresses.count {
-            addresses[i] &= ~(1 << mask[0].index)
-        }
-        return addresses
+        // For every floating bit, double the result making one "1" and the other "0" for that bit
+        return mask.filter { $0.value == .floating }
+            .reduce([address]) { result, bit -> [Int] in
+                result
+                    .flatMap { [
+                        $0 | 1 << bit.index,
+                        $0 & ~(1 << bit.index)
+                    ] }
+            }
     }
 
     static func run(_ source: InputData) {
