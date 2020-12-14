@@ -6,7 +6,7 @@
 //
 
 enum InputData: String, CaseIterable {
-    case example, challenge
+    case example, example2, challenge
 
     var data: [String] {
         switch self {
@@ -16,6 +16,13 @@ mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
 mem[8] = 11
 mem[7] = 101
 mem[8] = 0
+""".components(separatedBy: .newlines)
+
+        case .example2: return """
+mask = 000000000000000000000000000000X1001X
+mem[42] = 100
+mask = 00000000000000000000000000000000X0XX
+mem[26] = 1
 """.components(separatedBy: .newlines)
 
         case .challenge: return """
