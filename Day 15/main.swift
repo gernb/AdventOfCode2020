@@ -35,8 +35,19 @@ print("")
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
-
-        print("Part 2 (\(source)):")
+        var spoken = [Int: Int]()
+        input.dropLast().enumerated().forEach { idx, number in spoken[number] = idx + 1 }
+        var next = input.last!
+        for turn in input.count ... 30000000 - 1 {
+            if let previouslySpoken = spoken[next] {
+                spoken[next] = turn
+                next = turn - previouslySpoken
+            } else {
+                spoken[next] = turn
+                next = 0
+            }
+        }
+        print("Part 2 (\(source)): 30000000th number is \(next)")
     }
 }
 
