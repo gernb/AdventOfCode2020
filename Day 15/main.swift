@@ -38,7 +38,7 @@ enum Part2 {
         var spoken = [Int: Int]()
         input.dropLast().enumerated().forEach { idx, number in spoken[number] = idx + 1 }
         var next = input.last!
-        for turn in input.count ... 30000000 - 1 {
+        for turn in input.count ..< 30000000 {
             if let previouslySpoken = spoken[next] {
                 spoken[next] = turn
                 next = turn - previouslySpoken
