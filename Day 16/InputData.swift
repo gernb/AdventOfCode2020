@@ -6,7 +6,7 @@
 //
 
 enum InputData: String, CaseIterable {
-    case example, challenge
+    case example, example2, challenge
 
     var data: [String] {
         switch self {
@@ -24,6 +24,20 @@ nearby tickets:
 40,4,50
 55,2,20
 38,6,12
+""".components(separatedBy: "\n\n")
+
+        case .example2: return """
+class: 0-1 or 4-19
+row: 0-5 or 8-19
+seat: 0-13 or 16-19
+
+your ticket:
+11,12,13
+
+nearby tickets:
+3,9,18
+15,1,5
+5,14,9
 """.components(separatedBy: "\n\n")
 
         case .challenge: return """

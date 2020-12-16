@@ -62,11 +62,58 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+extension Rule: Hashable {}
+
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        let rules = input[0].components(separatedBy: .newlines).map(Rule.init)
+        let tickets = input[2]
+            .components(separatedBy: .newlines)
+            .dropFirst()
+            .map { $0.components(separatedBy: ",").compactMap(Int.init) }
+        let myTicket = input[1]
+            .components(separatedBy: .newlines)
+            .dropFirst()
+            .map { $0.components(separatedBy: ",").compactMap(Int.init) }
+            .first!
 
-        print("Part 2 (\(source)):")
+        let validTickets = tickets.compactMap { ticket in
+            Part1.invalidFields(for: ticket, with: rules).isEmpty ? ticket : nil
+        }
+        let fields = Set(rules.map(\.field))
+        var columns = Array(repeating: fields, count: myTicket.count)
+
+        validTickets.forEach { ticket in
+            ticket.enumerated().forEach { idx, field in
+                rules.forEach { rule in
+                    if !rule.valid(field) {
+                        columns[idx].remove(rule.field)
+                    }
+                }
+            }
+        }
+
+        while !columns.allSatisfy({ $0.count == 1 }) {
+            columns.filter({ $0.count == 1 }).forEach { column in
+                let field = column.first!
+                for i in columns.indices {
+                    if columns[i].count > 1 {
+                        columns[i].remove(field)
+                    }
+                }
+            }
+        }
+
+        let product = columns.enumerated()
+            .filter({ $1.first!.hasPrefix("departure") })
+            .reduce(1) { result, pair in
+                result * myTicket[pair.offset]
+            }
+
+        print("Part 2 (\(source)) product: \(product)")
+        print(columns)
+        print(myTicket)
     }
 }
 
