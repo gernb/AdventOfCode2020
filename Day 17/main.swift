@@ -113,13 +113,77 @@ InputData.allCases.forEach(Part1.run)
 
 // MARK: - Part 2
 
+struct Vector4: Hashable, CustomStringConvertible {
+    var x: Int
+    var y: Int
+    var z: Int
+    var w: Int
+
+    static let zero: Self = .init(x: 0, y: 0, z: 0, w: 0)
+
+    var description: String { "(\(x), \(y), \(z), \(w))" }
+
+    var neighbours: [Self] {
+        var result = Set<Self>()
+        for x in -1 ... 1 {
+            for y in -1 ... 1 {
+                for z in -1 ... 1 {
+                    for w in -1 ... 1 {
+                        result.insert(.init(x: self.x + x, y: self.y + y, z: self.z + z, w: self.w + w))
+                    }
+                }
+            }
+        }
+        return Array(result.subtracting([self]))
+    }
+}
+
+extension Dictionary where Key == Vector4, Value == State {
+    var xRange: ClosedRange<Int> { keys.map { $0.x }.range() }
+    var yRange: ClosedRange<Int> { keys.map { $0.y }.range() }
+    var zRange: ClosedRange<Int> { keys.map { $0.z }.range() }
+    var wRange: ClosedRange<Int> { keys.map { $0.w }.range() }
+
+    func activeNeighbours(for cube: Vector4) -> Int {
+        cube.neighbours.reduce(0) { $0 + (self[$1, default: .inactive] == .active ? 1 : 0) }
+    }
+}
+
 print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var grid = source.data.enumerated().reduce(into: [Vector4: State]()) { result, pair in
+            let (y, line) = pair
+            result = line.enumerated().reduce(into: result) { result, pair in
+                let (x, state) = pair
+                result[Vector4(x: x, y: y, z: 0, w: 0)] = State(rawValue: state)!
+            }
+        }
 
-        print("Part 2 (\(source)):")
+        for _ in 1 ... 6 {
+            var newGrid = [Vector4: State]()
+            for x in grid.xRange {
+                for y in grid.yRange {
+                    for z in grid.zRange {
+                        for w in grid.wRange {
+                            let cube = Vector4(x: x, y: y, z: z, w: w)
+                            switch (grid[cube, default: .inactive], grid.activeNeighbours(for: cube)) {
+                            case (.active, 2), (_, 3):
+                                newGrid[cube] = .active
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            grid = newGrid
+        }
+
+        let activeCount = grid.values.filter { $0 == .active }.count
+
+        print("Part 2 (\(source)): \(activeCount)")
     }
 }
 
