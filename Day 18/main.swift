@@ -52,15 +52,11 @@ enum Part1 {
         let input = source.data
         var sum = 0
 
-        for var line in input {
-            var result = 0
-            repeat {
-                let (partial, remainder) = solve(line)
-                result += partial
-                line = remainder
-            } while !line.isEmpty
+        for line in input {
+            let (result, remainder) = solve(line)
+            assert(remainder.isEmpty)
             if source != .challenge {
-                print(result)
+                print("\(line) = \(result)")
             }
             sum += result
         }
@@ -78,8 +74,24 @@ print("")
 enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
+        var sum = 0
 
-        print("Part 2 (\(source)):")
+        for line in input {
+            let modifiedLine = "((" +
+                line
+                    .replacingOccurrences(of: "(", with: "(((")
+                    .replacingOccurrences(of: ")", with: ")))")
+                    .replacingOccurrences(of: "*", with: "))*((")
+                + "))"
+            let (result, remainder) = Part1.solve(modifiedLine)
+            assert(remainder.isEmpty)
+            if source != .challenge {
+                print("\(line) = \(result)")
+            }
+            sum += result
+        }
+
+        print("Part 2 (\(source)) sum: \(sum)")
     }
 }
 
