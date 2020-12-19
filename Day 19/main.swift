@@ -61,12 +61,47 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
-enum Part2 {
-    static func run(_ source: InputData) {
-        let input = source.data
-
-        print("Part 2 (\(source)):")
+extension NSRegularExpression {
+    func matchLen(_ string: String) -> Int {
+        let range = NSRange(location: 0, length: string.utf16.count)
+        return rangeOfFirstMatch(in: string, range: range).length
     }
 }
 
-InputData.allCases.forEach(Part2.run)
+enum Part2 {
+    static func regex(for rule: Rule, using rules: [Int: Rule]) -> String {
+        var matches = rule.matches
+        while matches.contains(where: { Int(String($0)) != nil }) {
+            matches = matches
+                .components(separatedBy: " ")
+                .map { token in
+                    if let id = Int(token) {
+                        return rules[id]!.matches
+                    } else {
+                        return token
+                    }
+                }
+                .joined(separator: " ")
+        }
+
+        return matches.replacingOccurrences(of: " ", with: "")
+    }
+
+    static func run(_ source: InputData) {
+        let input = source.data
+        let rules = input[0].map(Rule.init).reduce(into: [Int: Rule]()) {
+            $0[$1.id] = $1
+        }
+
+        let r31 = try! NSRegularExpression(pattern: regex(for: Rule(string: "999: ( 31 )+"), using: rules) + "$")
+
+        let r = "^" + regex(for: Rule(string: "0: 42 ( 42 )+ ( 31 )+"), using: rules) + "$"
+        let filtered = input[1].filter({ $0.range(of: r, options: .regularExpression) != nil })
+
+        let count = filtered.filter { r31.matchLen($0) < ($0.count / 2) }.count
+        print("Part 2 (\(source)): \(count)")
+    }
+}
+
+Part2.run(.example2)
+Part2.run(.challenge)
