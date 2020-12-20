@@ -25,7 +25,7 @@ struct Rule {
 
 // MARK: - Part 1
 
-print("Day 11:")
+print("Day 19:")
 
 enum Part1 {
     static func run(_ source: InputData) {
