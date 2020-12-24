@@ -19,12 +19,11 @@ enum Part1 {
         return allergens.reduce(into: [String: Set<String>]()) { $0[$1] = ingredients }
     }
 
-    static func run(_ source: InputData) {
-        let input = source.data
+    static func ingredientsDict(for source: InputData) -> [String: (count: Int, allergen: String?)] {
         var ingredients: [String: (count: Int, allergen: String?)] = [:]
         var allergens: [String: Set<String>] = [:]
 
-        for line in input {
+        for line in source.data {
             let sets = allergenSets(from: line)
             let lineIngredients = sets.values.first!
             for ingredient in lineIngredients {
@@ -57,6 +56,12 @@ enum Part1 {
             }
         }
 
+        return ingredients
+    }
+
+    static func run(_ source: InputData) {
+        let ingredients = ingredientsDict(for: source)
+
         let count = ingredients.filter({ _, value in value.allergen == nil })
             .reduce(0) { $0 + $1.value.count }
 
@@ -72,9 +77,13 @@ print("")
 
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        let ingredients = Part1.ingredientsDict(for: source)
+        let dangerous = ingredients.filter({ _, value in value.allergen != nil })
+            .sorted { lhs, rhs in
+                lhs.value.allergen! < rhs.value.allergen!
+            }
 
-        print("Part 2 (\(source)):")
+        print("Part 2 (\(source)): \(dangerous.map { $0.key }.joined(separator: ","))")
     }
 }
 
