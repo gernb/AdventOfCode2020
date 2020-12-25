@@ -68,7 +68,42 @@ enum Part2 {
     static func run(_ source: InputData) {
         let input = source.data
 
-        print("Part 2 (\(source)):")
+        var circle: [Int: Int] = [:]
+        for (idx, n) in input.dropLast().enumerated() {
+            circle[n] = input[idx + 1]
+        }
+        var current = input.last!
+        for n in 10...1_000_000 {
+            circle[current] = n
+            current = n
+        }
+        circle[current] = input.first!
+        current = input.first!
+
+        for _ in 1...10_000_000 {
+            let pickup = [
+                circle[current]!,
+                circle[circle[current]!]!,
+                circle[circle[circle[current]!]!]!
+            ]
+            let next = circle[pickup.last!]!
+            circle[current] = next
+
+            var destination = current
+            repeat {
+                destination = destination - 1
+                if destination == 0 { destination = 1_000_000 }
+            } while pickup.contains(destination)
+
+            circle[pickup.last!] = circle[destination]
+            circle[destination] = pickup.first!
+
+            current = next
+        }
+
+        let label1 = circle[1]!
+        let label2 = circle[label1]!
+        print("Part 2 (\(source)): \(label1) * \(label2) = \(label1 * label2)")
     }
 }
 
