@@ -21,13 +21,6 @@ struct Coordinate: Hashable {
     var southEast: Coordinate { return Coordinate(x: x, y: y - 1, z: z + 1) }
     var southWest: Coordinate { return Coordinate(x: x - 1, y: y, z: z + 1) }
     var west: Coordinate { return Coordinate(x: x - 1, y: y + 1, z: z) }
-
-    func distance(to other: Coordinate) -> Int {
-        let xDiff = abs(x - other.x)
-        let yDiff = abs(y - other.y)
-        let zDiff = abs(z - other.z)
-        return (xDiff + yDiff + zDiff) / 2
-    }
 }
 
 enum Direction: String {
@@ -81,10 +74,9 @@ enum Part1 {
         return result
     }
 
-    static func run(_ source: InputData) {
-        let input = source.data
+    static func layoutTiles(_ source: InputData) -> [Coordinate: Colour] {
         var tiles: [Coordinate: Colour] = [:]
-        input.forEach { line in
+        source.data.forEach { line in
             var position = Coordinate.origin
             parse(line).forEach { dir in position.move(dir) }
             if tiles[position, default: .white] == .white {
@@ -93,6 +85,11 @@ enum Part1 {
                 tiles.removeValue(forKey: position)
             }
         }
+        return tiles
+    }
+
+    static func run(_ source: InputData) {
+        let tiles = layoutTiles(source)
 
         print("Part 1 (\(source)): \(tiles.count)")
     }
@@ -104,11 +101,56 @@ InputData.allCases.forEach(Part1.run)
 
 print("")
 
+extension Coordinate {
+    var adjacent: [Coordinate] {
+        [ northWest, northEast, east, southEast, southWest, west ]
+    }
+}
+
+extension Collection where Element == Int {
+    func range() -> ClosedRange<Element> {
+        precondition(count > 0)
+        let sorted = self.sorted()
+        return (sorted.first! - 1) ... (sorted.last! + 1)
+    }
+}
+
+extension Dictionary where Key == Coordinate {
+    var xRange: ClosedRange<Int> { keys.map { $0.x }.range() }
+    var yRange: ClosedRange<Int> { keys.map { $0.y }.range() }
+    var zRange: ClosedRange<Int> { keys.map { $0.z }.range() }
+}
+
 enum Part2 {
     static func run(_ source: InputData) {
-        let input = source.data
+        var tiles = Part1.layoutTiles(source)
 
-        print("Part 2 (\(source)):")
+        for _ in 1...100 {
+            var newTiles = [Coordinate: Colour]()
+            for x in tiles.xRange {
+                for y in tiles.yRange {
+                    for z in tiles.zRange {
+                        let c = Coordinate(x: x, y: y, z: z)
+                        let tile = tiles[c, default: .white]
+                        let adjacentBlack = c.adjacent
+                            .map { tiles[$0, default: .white] == .black ? 1 : 0 }
+                            .reduce(0, +)
+                        switch (tile, adjacentBlack) {
+                        case (.black, 1), (.black, 2):
+                            newTiles[c] = .black
+                        case (.white, 2):
+                            newTiles[c] = .black
+                        default:
+                            break
+                        }
+
+                    }
+                }
+            }
+            tiles = newTiles
+        }
+
+        print("Part 2 (\(source)): \(tiles.count)")
     }
 }
 
